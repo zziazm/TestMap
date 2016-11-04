@@ -10,9 +10,7 @@
 #import <CoreLocation/CoreLocation.h>
 #import <MapKit/MapKit.h>
 @interface ViewController ()<CLLocationManagerDelegate, MKMapViewDelegate>
-@property (strong, nonatomic)  MKMapView *mapView;
 
-@property (nonatomic,strong)CLLocationManager *locationManager;
 
 @end
 
@@ -34,29 +32,35 @@
     mv.mapType = MKMapTypeStandard;
     mv.showsTraffic=YES;
     _mapView = mv;
+    
+    _buttton = [UIButton buttonWithType:UIButtonTypeSystem];
+    _buttton.frame = CGRectMake(100, 64, 60, 30);
+    [_buttton setTitle:@"放大" forState:UIControlStateNormal];
+    [self.view addSubview:_buttton];
+    [_buttton addTarget:self action:@selector(max:) forControlEvents:UIControlEventTouchDown];
     // Do any additional setup after loading the view, typically from a nib.
 }
 - (void)mapViewWillStartLocatingUser:(MKMapView *)mapView{
     
 }
 - (void)mapView:(MKMapView *)mapView didUpdateUserLocation:(MKUserLocation *)userLocation{
-    //创建编码对象
-    CLGeocoder *geocoder=[[CLGeocoder alloc]init];
-    //反地理编码
-    [geocoder reverseGeocodeLocation:userLocation.location completionHandler:^(NSArray<CLPlacemark *> * _Nullable placemarks, NSError * _Nullable error) {
-        if (error!=nil || placemarks.count==0) {
-            return ;
-        }
-        //获取地标
-        CLPlacemark *placemark=[placemarks firstObject];
-        //设置标题
-        userLocation.title=placemark.locality;
-        //设置子标题
-        userLocation.subtitle=placemark.name;
-    }];
     
 }
 
+- (void)max:(id)sender {
+    
+    //获取维度跨度并缩小一倍
+    CGFloat latitudeDelta = self.mapView.region.span.latitudeDelta * 0.5;
+    //获取经度跨度并缩小一倍
+    CGFloat longitudeDelta = self.mapView.region.span.longitudeDelta * 0.5;
+    //经纬度跨度
+    MKCoordinateSpan span = MKCoordinateSpanMake(latitudeDelta, longitudeDelta);
+    //设置当前区域
+    MKCoordinateRegion region = MKCoordinateRegionMake(self.mapView.centerCoordinate, span);
+    
+    [self.mapView setRegion:region animated:YES];
+    
+}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
